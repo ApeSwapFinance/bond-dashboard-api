@@ -84,25 +84,39 @@ export class CollectorService {
   }
 
   getStartAndEndTime(timeframe: TimeFrame): { start: number; end: number } {
-    const date = new Date();
+    const date = new Date(
+      Date.UTC(
+        new Date().getUTCFullYear(),
+        new Date().getUTCMonth(),
+        new Date().getUTCDate(),
+        new Date().getUTCHours(),
+        new Date().getUTCMinutes(),
+        new Date().getUTCSeconds(),
+      ),
+    );
 
     function getMondayOfLastWeek(): Date {
-      let day = date.getDay();
-      let difference = date.getDate() - day + (day === 0 ? -6 : 1) - 7;
-      return new Date(date.setDate(difference));
+      const day = date.getUTCDay();
+      const difference = date.getUTCDate() - day + (day === 0 ? -6 : 1) - 7;
+      return new Date(
+        Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), difference),
+      );
     }
 
     function getMonthRange(monthsAgo: number): { start: number; end: number } {
       const firstDay = new Date(
-        date.getFullYear(),
-        date.getMonth() - monthsAgo,
-        1,
+        Date.UTC(date.getUTCFullYear(), date.getUTCMonth() - monthsAgo, 1),
       );
       const lastDay = new Date(
-        date.getFullYear(),
-        date.getMonth() - monthsAgo + 1,
-        0,
+        Date.UTC(date.getUTCFullYear(), date.getUTCMonth() - monthsAgo + 1, 0),
       );
+
+      // Set hours, minutes, and seconds to 0 for midnight for the first day
+      firstDay.setUTCHours(0, 0, 0, 0);
+
+      // Set hours, minutes, and seconds for 11:59:59 PM for the last day
+      lastDay.setUTCHours(23, 59, 59, 999);
+
       return {
         start: Math.floor(firstDay.getTime() / 1000),
         end: Math.floor(lastDay.getTime() / 1000),
@@ -112,9 +126,14 @@ export class CollectorService {
     switch (timeframe) {
       case 'this week':
         const thisMonday = new Date(
-          date.getFullYear(),
-          date.getMonth(),
-          date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1),
+          date.getUTCFullYear(),
+          date.getUTCMonth(),
+          date.getUTCDate() -
+            date.getUTCDay() +
+            (date.getUTCDay() === 0 ? -6 : 1),
+          0,
+          0,
+          0, // Set hours, minutes, and seconds to 0 for midnight
         );
         return {
           start: Math.floor(thisMonday.getTime() / 1000),
@@ -125,6 +144,8 @@ export class CollectorService {
         const lastMonday = getMondayOfLastWeek();
         const lastSunday = new Date(lastMonday);
         lastSunday.setDate(lastMonday.getDate() + 6);
+        lastSunday.setHours(23, 59, 59); // Set hours, minutes, and seconds for 11:59:59 PM
+
         return {
           start: Math.floor(lastMonday.getTime() / 1000),
           end: Math.floor(lastSunday.getTime() / 1000),
@@ -135,6 +156,8 @@ export class CollectorService {
         twoWeeksAgoMonday.setDate(twoWeeksAgoMonday.getDate() - 7);
         const twoWeeksAgoSunday = new Date(twoWeeksAgoMonday);
         twoWeeksAgoSunday.setDate(twoWeeksAgoMonday.getDate() + 6);
+        twoWeeksAgoSunday.setHours(23, 59, 59); // Set hours, minutes, and seconds for 11:59:59 PM
+
         return {
           start: Math.floor(twoWeeksAgoMonday.getTime() / 1000),
           end: Math.floor(twoWeeksAgoSunday.getTime() / 1000),
@@ -142,9 +165,12 @@ export class CollectorService {
 
       case 'this month':
         const firstDayThisMonth = new Date(
-          date.getFullYear(),
-          date.getMonth(),
+          date.getUTCFullYear(),
+          date.getUTCMonth(),
           1,
+          0,
+          0,
+          0, // Set hours, minutes, and seconds to 0 for midnight
         );
         return {
           start: Math.floor(firstDayThisMonth.getTime() / 1000),
@@ -176,9 +202,11 @@ export class CollectorService {
     const endDate = new Date(end * 1000).toLocaleDateString();
 
     const DateRange = `${startDate} - ${endDate}`;
+    const UnixDateRange = `${start} - ${end}`;
 
     return {
       DateRange: DateRange,
+      UnixDateRange: UnixDateRange,
       Label: timeframe,
       TotalSales: relevantSales.length,
       UniqueWallets: new Set(
