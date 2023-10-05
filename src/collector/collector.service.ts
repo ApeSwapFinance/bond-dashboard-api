@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import fs from 'fs';
+const path = require('path');
 
 type SaleData = {
   contractAddress: string;
@@ -11,6 +12,8 @@ type SaleData = {
 };
 
 type TimeFrame =
+  | 'today'
+  | 'yesterday'
   | 'this week'
   | 'last week'
   | '2 weeks ago'
@@ -26,7 +29,7 @@ type TimeFrame =
 export class CollectorService {
   private readonly apiUrl =
     'https://api-v2.apeswap.finance/bills/summary/purchases';
-  private readonly filename = 'data.json';
+  private readonly filename = path.resolve(__dirname, 'data.json');
   private readonly itemsPerPage = 50;
   private readonly maxNewPages = 75;
 
@@ -124,6 +127,48 @@ export class CollectorService {
     }
 
     switch (timeframe) {
+      case 'today':
+        const startOfDay = new Date(
+          Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            date.getUTCDate(),
+            0,
+            0,
+            0,
+          ),
+        );
+        return {
+          start: Math.floor(startOfDay.getTime() / 1000),
+          end: Math.floor(date.getTime() / 1000),
+        };
+
+      case 'yesterday':
+        const startOfYesterday = new Date(
+          Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            date.getUTCDate() - 1,
+            0,
+            0,
+            0,
+          ),
+        );
+        const endOfYesterday = new Date(
+          Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            date.getUTCDate() - 1,
+            23,
+            59,
+            59,
+          ),
+        );
+        return {
+          start: Math.floor(startOfYesterday.getTime() / 1000),
+          end: Math.floor(endOfYesterday.getTime() / 1000),
+        };
+
       case 'this week':
         const thisMonday = new Date(
           date.getUTCFullYear(),
@@ -314,6 +359,8 @@ export class CollectorService {
     const allData = this.readExistingData();
     const currentTime = Math.floor(Date.now() / 1000); // current timestamp in seconds
 
+    const today = this.getSalesData('today', allData);
+    const yesterday = this.getSalesData('yesterday', allData);
     const thisWeek = this.getSalesData('this week', allData);
     const oneWeekAgo = this.getSalesData('last week', allData);
     const twoWeeksAgo = this.getSalesData('2 weeks ago', allData);
@@ -330,6 +377,8 @@ export class CollectorService {
     return {
       bonds: bonds,
       figures: [
+        today,
+        yesterday,
         thisWeek,
         oneWeekAgo,
         twoWeeksAgo,
