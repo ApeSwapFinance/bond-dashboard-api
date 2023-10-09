@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import axios from 'axios';
 import fs from 'fs';
 const path = require('path');
@@ -33,6 +34,7 @@ export class CollectorService {
   private readonly itemsPerPage = 50;
   private readonly maxNewPages = 75;
 
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async collectData() {
     const allData = [];
 
