@@ -329,7 +329,7 @@ export class CollectorService {
 
     const uniqueData = data
       .filter((x: any) => {
-        if (seen.has(x.contractAddress)) {
+        if (seen.has(x.contractAddress) || x.lp.contains('ABOND')) {
           return false;
         } else {
           seen.add(x.contractAddress);
