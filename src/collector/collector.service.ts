@@ -286,6 +286,19 @@ export class CollectorService {
     };
   }
 
+  getMigrationBondInfo(address: string) {
+    let dollarAmount = 0;
+
+    const allData = this.readExistingData();
+    const filteredData = allData.filter(
+      (x: any) => x.contractAddress === address,
+    );
+
+    filteredData.forEach((x) => {
+      dollarAmount += x.dollarValue;
+    });
+  }
+
   getSalesBondInfo(address: string) {
     const allData = this.readExistingData();
 
@@ -329,7 +342,7 @@ export class CollectorService {
 
     const uniqueData = data
       .filter((x: any) => {
-        if (seen.has(x.contractAddress) || x.lp.contains('ABOND')) {
+        if (seen.has(x.contractAddress) || x.lp.includes('ABOND')) {
           return false;
         } else {
           seen.add(x.contractAddress);
