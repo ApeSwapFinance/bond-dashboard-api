@@ -342,7 +342,11 @@ export class CollectorService {
 
     const uniqueData = data
       .filter((x: any) => {
-        if (seen.has(x.contractAddress) || x.lp.includes('ABOND')) {
+        if (
+          seen.has(x.contractAddress) ||
+          x.lp.includes('ABOND') ||
+          totalDollarValues[x.contractAddress] < 1
+        ) {
           return false;
         } else {
           seen.add(x.contractAddress);
