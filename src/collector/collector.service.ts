@@ -245,6 +245,31 @@ export class CollectorService {
       (item) => item.createdAt >= start && item.createdAt <= end,
     );
 
+    const bondSalesMap = {};
+
+    // Aggregate data for each bond
+    relevantSales.forEach((sale) => {
+      if (!bondSalesMap[sale.contractAddress]) {
+        bondSalesMap[sale.contractAddress] = {
+          totalDollarValue: 0,
+          numberOfSales: 0,
+          lp: sale.lp,
+        };
+      }
+      bondSalesMap[sale.contractAddress].totalDollarValue += sale.dollarValue;
+      bondSalesMap[sale.contractAddress].numberOfSales++;
+    });
+
+    // Convert map to array and sort
+    const bondSalesArray = Object.keys(bondSalesMap)
+      .map((key) => ({
+        contractAddress: key,
+        lp: bondSalesMap[key].lp,
+        totalDollarValue: bondSalesMap[key].totalDollarValue,
+        numberOfSales: bondSalesMap[key].numberOfSales,
+      }))
+      .sort((a, b) => b.totalDollarValue - a.totalDollarValue);
+
     const startDate = new Date(start * 1000).toLocaleDateString();
     const endDate = new Date(end * 1000).toLocaleDateString();
 
@@ -264,6 +289,7 @@ export class CollectorService {
         0,
       ),
       Sales: relevantSales.sort((a, b) => b.createdAt - a.createdAt),
+      BondSales: bondSalesArray,
     };
   }
 
@@ -374,8 +400,17 @@ export class CollectorService {
     return uniqueData;
   }
 
-  getSalesInfo(contractAddress?: string) {
-    const allData = this.readExistingData();
+  getSalesInfo(contractAddress?: string, chainId?: string) {
+    let allData = this.readExistingData();
+
+    if (chainId != null) {
+      allData = allData.filter((x: any) => x.chainId == chainId);
+
+      if (chainId === '137') {
+        allData = allData.filter((x: any) => x.createdAt > '1701476988');
+      }
+    }
+
     const currentTime = Math.floor(Date.now() / 1000); // current timestamp in seconds
 
     const today = this.getSalesData('today', allData);

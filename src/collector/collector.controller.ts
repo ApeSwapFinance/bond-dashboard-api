@@ -14,9 +14,10 @@ export class CollectorController {
     return await this.collectorService.collectData();
   }
 
-  @Get('salesInfo')
-  async salesInfo() {
-    return await this.collectorService.getSalesInfo();
+  @Get('salesInfo/:chainId?')
+  async salesInfo(@Param('chainId') chainId?: string) {
+    console.log(chainId);
+    return await this.collectorService.getSalesInfo(null, chainId);
   }
 
   @Get('salesInfo/:address')
