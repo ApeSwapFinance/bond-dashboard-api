@@ -46,7 +46,11 @@ export class CollectorService {
 
       for (let i = 2; i <= totalPages; i++) {
         console.log(`Fetching page ${i} of ${totalPages}`);
-        const pageData = await this.fetchData(i);
+        let pageData = await this.fetchData(i);
+        pageData.data = pageData.data.filter(
+          (x) => x.lp !== 'BANANA-ABOND' && x.lp !== 'GNANA-ABOND',
+        );
+
         allData.push(...pageData.data); // adjust this if the data structure is different
       }
 
