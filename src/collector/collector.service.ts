@@ -48,7 +48,10 @@ export class CollectorService {
         console.log(`Fetching page ${i} of ${totalPages}`);
         let pageData = await this.fetchData(i);
         pageData.data = pageData.data.filter(
-          (x) => x.lp !== 'BANANA-ABOND' && x.lp !== 'GNANA-ABOND',
+          (x) =>
+            x.lp !== 'BANANA-ABOND' &&
+            x.lp !== 'GNANA-ABOND' &&
+            x.lp !== 'ACF-ABOND',
         );
 
         allData.push(...pageData.data); // adjust this if the data structure is different
