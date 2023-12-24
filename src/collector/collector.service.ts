@@ -377,7 +377,8 @@ export class CollectorService {
       .filter((x: any) => {
         if (
           seen.has(x.contractAddress) ||
-          x.lp.includes('ABOND') ||
+          x.lp.includes('BANANA-ABOND') ||
+          x.lp.includes('GNANA-ABOND') ||
           totalDollarValues[x.contractAddress] < 1
         ) {
           return false;
