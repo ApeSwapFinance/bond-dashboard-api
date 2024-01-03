@@ -274,6 +274,7 @@ export class CollectorService {
         lp: bondSalesMap[key].lp,
         totalDollarValue: bondSalesMap[key].totalDollarValue,
         numberOfSales: bondSalesMap[key].numberOfSales,
+        chainId: bondSalesMap[key].chainId,
       }))
       .sort((a, b) => b.totalDollarValue - a.totalDollarValue);
 
