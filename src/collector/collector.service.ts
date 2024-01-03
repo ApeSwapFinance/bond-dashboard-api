@@ -277,6 +277,9 @@ export class CollectorService {
       }))
       .sort((a, b) => b.totalDollarValue - a.totalDollarValue);
 
+    // Extract top 3 bonds
+    const top3Bonds = bondSalesArray.slice(0, 3);
+
     const startDate = new Date(start * 1000).toLocaleDateString();
     const endDate = new Date(end * 1000).toLocaleDateString();
 
@@ -296,7 +299,8 @@ export class CollectorService {
         0,
       ),
       Sales: relevantSales.sort((a, b) => b.createdAt - a.createdAt),
-      BondSales: bondSalesArray,
+      BondSales: bondSalesArray, // All bond sales
+      Top3BondSales: top3Bonds, // Top 3 bonds
     };
   }
 
