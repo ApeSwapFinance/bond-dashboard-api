@@ -261,6 +261,7 @@ export class CollectorService {
           totalDollarValue: 0,
           numberOfSales: 0,
           lp: sale.lp,
+          chainId: sale.chainId,
         };
       }
       bondSalesMap[sale.contractAddress].totalDollarValue += sale.dollarValue;
