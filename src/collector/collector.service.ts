@@ -33,6 +33,11 @@ export class CollectorService {
   private readonly filename = path.resolve(__dirname, 'data.json');
   private readonly itemsPerPage = 50;
   private readonly maxNewPages = 75;
+  private allAddresses = new Array<string>();
+
+  checkFirstTimeBuyer(address: string): boolean {
+    return !this.allAddresses.includes(address);
+  }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
   async collectData() {
@@ -42,7 +47,7 @@ export class CollectorService {
       const initialData = await this.fetchData(1);
       const totalPages = initialData.pages;
 
-      allData.push(...initialData.data); // assuming the data is in a "data" property
+      allData.push(...initialData.data);
 
       for (let i = 2; i <= totalPages; i++) {
         console.log(`Fetching page ${i} of ${totalPages}`);
@@ -55,6 +60,15 @@ export class CollectorService {
         );
 
         allData.push(...pageData.data); // adjust this if the data structure is different
+      }
+
+      for (const sale of allData) {
+        const isFirstTimeBuyer = this.checkFirstTimeBuyer(
+          sale.createdAddressOwner,
+        );
+
+        sale.isFirstTimeBuyer = isFirstTimeBuyer;
+        this.allAddresses.push(sale.createdAddressOwner);
       }
 
       await this.saveDataToFile(allData);
